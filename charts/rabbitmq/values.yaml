@@ -1,0 +1,264 @@
+global:
+  # Set the location of Workflow's controller controller instance
+  #
+  # Valid values are:
+  # - on-cluster: Run Rabbitmq within the Kubernetes cluster
+  # - off-cluster: Run Rabbitmq outside the Kubernetes cluster (configure in controller section)
+  rabbitmq_location: "on-cluster"
+  ingress_class: ""
+  # This will be the hostname that is used to build endpoints such as "drycc-rabbitmq.$HOSTNAME"
+  platform_domain: ""
+  # Whether cert_manager is enabled to automatically generate drycc certificates
+  cert_manager_enabled: "true"
+  cluster_domain: "cluster.local"
+
+image_pull_policy: "Always"
+image_tag: "canary"
+image_registry: ""
+org: "drycc"
+
+url: "http://my.rabbitmq.url:5672"
+username: "rabbit"
+password: "rabbit"
+vhost: "drycc"
+
+## Value for the RABBITMQ_LOGS environment variable
+## ref: https://www.rabbitmq.com/logging.html#log-file-location
+##
+logs: '-'
+
+## Plugins to enable
+##
+plugins: "rabbitmq_management rabbitmq_peer_discovery_k8s"
+
+## Community plugins to download during container initialization.
+## Combine it with extraPlugins to also enable them.
+##
+# communityPlugins:
+
+## Extra plugins to enable
+## Use this instead of `plugins` to add new plugins
+##
+extraPlugins: "rabbitmq_auth_backend_ldap"
+
+## Clustering settings
+##
+clustering:
+  addressType: hostname
+  ## Rebalance master for queues in cluster when new replica is created
+  ## ref: https://www.rabbitmq.com/rabbitmq-queues.8.html#rebalance
+  ##
+  rebalance: false
+
+  ## forceBoot: executes 'rabbitmqctl force_boot' to force boot cluster shut down unexpectedly in an
+  ## unknown order.
+  ## ref: https://www.rabbitmq.com/rabbitmqctl.8.html#force_boot
+  ##
+  forceBoot: false
+
+## Additional environment variables to set
+## E.g:
+## extraEnvVars:
+##   - name: FOO
+##     value: BAR
+##
+extraEnvVars: []
+
+## Configuration file content: required cluster configuration
+## Do not override unless you know what you are doing.
+## To add more configuration, use `extraConfiguration` of `advancedConfiguration` instead
+##
+configuration: |-
+  ## Username and password
+  default_user = {{ .Values.username }}
+  default_pass = {{ .Values.password }}
+  {{ tpl .Values.extraConfiguration . }}
+
+## Configuration file content: extra configuration
+## Use this instead of `configuration` to add more configuration
+##
+extraConfiguration: |-
+  default_vhost = {{ .Values.vhost }}
+  #disk_free_limit.absolute = 50MB
+  #load_definitions = /app/load_definition.json
+
+## Configuration file content: advanced configuration
+## Use this as additional configuraton in classic config format (Erlang term configuration format)
+##
+advancedConfiguration: |-
+
+## Optionally specify extra secrets to be created by the chart.
+## This can be useful when combined with load_definitions to automatically create the secret containing the definitions to be loaded.
+## Example:
+## extraSecrets:
+##   load-definition:
+##     load_definition.json: |
+##       {
+##         ...
+##       }
+##
+extraSecrets: {}
+
+## Number of RabbitMQ replicas to deploy
+##
+replicaCount: 1
+
+## Name of the priority class to be used by RabbitMQ pods, priority class needs to be created beforehand
+## Ref: https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/
+##
+priorityClassName: ""
+
+## RabbitMQ containers' resource requests and limits
+## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+##
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  limits: {}
+  #   cpu: 1000m
+  #   memory: 2Gi
+  requests: {}
+  #   cpu: 1000m
+  #   memory: 2Gi
+
+## RabbitMQ containers' liveness and readiness probes.
+## ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
+##
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 120
+  timeoutSeconds: 20
+  periodSeconds: 30
+  failureThreshold: 6
+  successThreshold: 1
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 10
+  timeoutSeconds: 20
+  periodSeconds: 30
+  failureThreshold: 3
+  successThreshold: 1
+
+## Role Based Access
+## ref: https://kubernetes.io/docs/admin/authorization/rbac/
+##
+rbac:
+  ## Specifies whether RBAC rules should be created
+  ## binding RabbitMQ ServiceAccount to a role
+  ## that allows RabbitMQ pods querying the K8s API
+  ##
+  create: true
+
+persistence:
+  enabled: false # Set to true to enable persistence
+  ## rabbitmq data Persistent Volume Storage Class
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  ##   GKE, AWS & OpenStack)
+  ##
+  storageClass: default
+  volumeName: ""
+  accessMode: ReadWriteOnce
+  size: 8Gi # PVC size
+
+
+## Pod Disruption Budget configuration
+## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+##
+pdb:
+  create: false
+  ## Min number of pods that must still be available after the eviction
+  ##
+  minAvailable: 1
+  ## Max number of pods that can be unavailable after the eviction
+  ##
+  # maxUnavailable: 1
+
+## Kubernetes service type
+service:
+  type: ClusterIP
+  ## Amqp port
+  ##
+  port: 5672
+
+  ## Amqp Tls port
+  ##
+  tlsPort: 5671
+
+  ## Node port
+  ##
+  # nodePort: 30672
+
+  ## Node port Tls
+  ##
+  # tlsNodePort: 30671
+
+  ## Dist port
+  ##
+  distPort: 25672
+
+  ## Node port (Manager)
+  ##
+  # distNodePort: 30676
+
+  ## RabbitMQ Manager port
+  ##
+  managerPort: 15672
+
+  ## Node port (Manager)
+  ##
+  # managerNodePort: 30673
+
+  ## Node port for EPMD Discovery
+  ##
+  # epmdNodePort: 30675
+
+  ## Extra ports to expose
+  ## E.g.:
+  ## extraPorts:
+  ## - name: new_svc_name
+  ##   port: 1234
+  ##   targetPort: 1234
+  ##
+  extraPorts: []
+
+  ## Load Balancer sources
+  ## https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service
+  ##
+  # loadBalancerSourceRanges:
+  # - 10.10.10.0/24
+
+  ## Set the ExternalIPs
+  ##
+  # externalIPs:
+
+  ## Set the LoadBalancerIP
+  ##
+  # loadBalancerIP:
+
+  ## Service labels. Evaluated as a template
+  ##
+  labels: {}
+
+  ## Service annotations. Evaluated as a template
+  ## Example:
+  ## annotations:
+  ##   service.beta.kubernetes.io/aws-load-balancer-internal: 0.0.0.0/0
+  ##
+  annotations: {}
+
+## RabbitMQ pods ServiceAccount
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
+##
+serviceAccount:
+  ## Specifies whether a ServiceAccount should be created
+  ##
+  create: true
+  ## The name of the ServiceAccount to use.
+  ## If not set and create is true, a name is generated using the rabbitmq.fullname template
+  ##
+  # name:

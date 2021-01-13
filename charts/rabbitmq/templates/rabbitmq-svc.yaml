@@ -1,0 +1,59 @@
+{{- if eq .Values.global.rabbitmq_location "on-cluster" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: drycc-rabbitmq
+  labels:
+    heritage: drycc
+spec:
+  type: {{ .Values.service.type }}
+  {{- if eq .Values.service.type "LoadBalancer" }}
+  {{- if not (empty .Values.service.loadBalancerIP) }}
+  loadBalancerIP: {{ .Values.service.loadBalancerIP }}
+  {{- end }}
+  {{- if .Values.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges: {{- toYaml .Values.service.loadBalancerSourceRanges | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  {{- if .Values.service.externalIPs }}
+  externalIPs: {{- toYaml .Values.service.externalIPs | nindent 4 }}
+  {{- end }}
+  ports:
+    - name: amqp
+      port: {{ .Values.service.port }}
+      targetPort: amqp
+      {{- if (eq .Values.service.type "ClusterIP") }}
+      nodePort: null
+      {{- else if and (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) (not (empty .Values.service.nodePort)) }}
+      nodePort: {{ .Values.service.nodePort }}
+      {{- end }}
+    - name: epmd
+      port: 4369
+      targetPort: epmd
+      {{- if (eq .Values.service.type "ClusterIP") }}
+      nodePort: null
+      {{- else if (and (eq .Values.service.type "NodePort") (not (empty .Values.service.epmdNodePort))) }}
+      nodePort: {{ .Values.service.epmdNodePort }}
+      {{- end }}
+    - name: dist
+      port: {{ .Values.service.distPort }}
+      targetPort: dist
+      {{- if eq .Values.service.type "ClusterIP" }}
+      nodePort: null
+      {{- else if (and (eq .Values.service.type "NodePort") (not (empty .Values.service.distNodePort))) }}
+      nodePort: {{ .Values.service.distNodePort }}
+      {{- end }}
+    - name: http-stats
+      port: {{ .Values.service.managerPort }}
+      targetPort: stats
+      {{- if eq .Values.service.type "ClusterIP" }}
+      nodePort: null
+      {{- else if (and (eq .Values.service.type "NodePort") (not (empty .Values.service.managerNodePort))) }}
+      nodePort: {{ .Values.service.managerNodePort }}
+      {{- end }}
+    {{- if .Values.service.extraPorts }}
+    {{- include "common.tplvalues.render" (dict "value" .Values.service.extraPorts "context" $) | nindent 4 }}
+    {{- end }}
+  selector:
+    matchLabels: drycc-rabbitmq
+{{- end }}
