@@ -1,0 +1,25 @@
+{{- if eq .Values.global.rabbitmq_location "on-cluster" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: drycc-rabbitmq-headless
+  labels:
+    heritage: drycc
+spec:
+  clusterIP: None
+  ports:
+    - name: epmd
+      port: 4369
+      targetPort: epmd
+    - name: amqp
+      port: {{ .Values.service.port }}
+      targetPort: amqp
+    - name: dist
+      port: {{ .Values.service.distPort }}
+      targetPort: dist
+    - name: stats
+      port: {{ .Values.service.managerPort }}
+      targetPort: stats
+  selector:
+    matchLabels: drycc-rabbitmq
+{{- end }}
