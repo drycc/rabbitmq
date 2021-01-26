@@ -11,9 +11,6 @@ include includes.mk
 include versioning.mk
 include deploy.mk
 
-SHELL_SCRIPTS = $(wildcard _scripts/*.sh contrib/ci/*.sh rootfs/usr/local/bin/*)
-TEST_ENV_PREFIX := docker run --rm -v ${CURDIR}:/bash -w /bash ${DEV_REGISTRY}/drycc/go-dev
-
 build: docker-build
 push: docker-push
 deploy: check-kubectl docker-build docker-push install
@@ -28,10 +25,7 @@ docker-buildx:
 clean: check-docker
 	docker rmi $(IMAGE)
 	
-test: test-style
-
-test-style:
-	${TEST_ENV_PREFIX} shellcheck $(SHELL_SCRIPTS)
+test: docker-build
 
 .PHONY: build push docker-build clean upgrade deploy test test-style
 
