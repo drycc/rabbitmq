@@ -73,7 +73,7 @@ spec:
             {{- if .Values.persistence.enabled }}
             - name: rabbitmq-data
               mountPath: /var/lib/rabbitmq
-            {{ end }}
+            {{- end }}
       volumes:
         - name: rabbitmq-creds
           secret:
@@ -82,5 +82,5 @@ spec:
         - name: rabbitmq-data
           persistentVolumeClaim:
             claimName: drycc-rabbitmq
-        {{ end }}
+        {{- end }}
 {{- end }}
