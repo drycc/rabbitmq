@@ -21,7 +21,7 @@ spec:
       serviceAccount: drycc-rabbitmq
       containers:
         - name: drycc-rabbitmq
-          image: {{.Values.image_registry}}/{{.Values.org}}/rabbitmq:{{.Values.image_tag}}
+          image: {{.Values.image_registry}}/{{.Values.image_org}}/rabbitmq:{{.Values.image_tag}}
           imagePullPolicy: {{.Values.image_pull_policy}}
           ports:
             - containerPort: 5672
