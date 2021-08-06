@@ -61,12 +61,17 @@ spec:
                 - /bin/bash
                 - -ec
                 - rabbitmq-diagnostics -q check_running
+            initialDelaySeconds: 30
+            timeoutSeconds: 10                
           readinessProbe:
             exec:
               command:
                 - /bin/bash
                 - -ec
                 - rabbitmq-diagnostics -q check_running
+            initialDelaySeconds: 30
+            timeoutSeconds: 10
+            periodSeconds: 5       
           volumeMounts:
             - name: rabbitmq-creds
               mountPath: /var/run/secrets/drycc/rabbitmq/creds
