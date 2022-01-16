@@ -1,4 +1,4 @@
-{{- if eq .Values.global.rabbitmq_location "on-cluster" }}
+{{- if eq .Values.global.rabbitmqLocation "on-cluster" }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -8,7 +8,7 @@ metadata:
   annotations:
     component.drycc.cc/version: {{ .Values.image_tag }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicas }}
   serviceName: drycc-rabbitmq
   selector:
     matchLabels:
@@ -20,72 +20,97 @@ spec:
     spec:
       serviceAccount: drycc-rabbitmq
       containers:
-        - name: drycc-rabbitmq
-          image: {{.Values.image_registry}}/{{.Values.image_org}}/rabbitmq:{{.Values.image_tag}}
-          imagePullPolicy: {{.Values.image_pull_policy}}
-          ports:
-            - containerPort: 5672
-{{- if or (.Values.limits_cpu) (.Values.limits_memory)}}
-          resources:
-            limits:
-{{- if (.Values.limits_cpu) }}
-              cpu: {{.Values.limits_cpu}}
-{{- end}}
-{{- if (.Values.limits_memory) }}
-              memory: {{.Values.limits_memory}}
-{{- end}}
-{{- end}}
-          env:
-            - name: RABBITMQ_DEFAULT_USER
-              valueFrom:
-                secretKeyRef:
-                  name: rabbitmq-creds
-                  key: username
-            - name: RABBITMQ_DEFAULT_PASS
-              valueFrom:
-                secretKeyRef:
-                  name: rabbitmq-creds
-                  key: password
-            - name: RABBITMQ_DEFAULT_VHOST
-              value: drycc
-          lifecycle:
-            preStop:
-              exec:
-                command:
-                  - bash
-                  - -ec
-                  - rabbitmqctl stop_app
-          livenessProbe:
+      - name: drycc-rabbitmq
+        image: {{.Values.image_registry}}/{{.Values.image_org}}/rabbitmq:{{.Values.image_tag}}
+        imagePullPolicy: {{.Values.image_pull_policy}}
+        ports:
+        - containerPort: 5672
+        {{- if or (.Values.limits_cpu) (.Values.limits_memory)}}
+        resources:
+          limits:
+            {{- if (.Values.limits_cpu) }}
+            cpu: {{.Values.limits_cpu}}
+            {{- end}}
+            {{- if (.Values.limits_memory) }}
+            memory: {{.Values.limits_memory}}
+            {{- end}}
+        {{- end}}
+        args:
+        - -c
+        - cp -v /etc/rabbitmq/rabbitmq.conf ${RABBITMQ_CONFIG_FILE}; exec docker-entrypoint.sh
+          rabbitmq-server
+        command:
+        - sh
+        env:
+        - name: RABBITMQ_ERLANG_COOKIE
+          valueFrom:
+            secretKeyRef:
+              key: cookie
+              name: rabbitmq-creds
+        - name: K8S_SERVICE_NAME
+          value: drycc-rabbitmq
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: RABBITMQ_USE_LONGNAME
+          value: "true"
+        - name: RABBITMQ_NODENAME
+          value: rabbit@$(POD_NAME).drycc-rabbitmq.$(POD_NAMESPACE).svc.cluster.local
+        - name: RABBITMQ_CONFIG_FILE
+          value: /var/lib/rabbitmq/rabbitmq.conf
+        lifecycle:
+          preStop:
             exec:
               command:
-                - /bin/bash
+                - bash
                 - -ec
-                - rabbitmq-diagnostics -q check_running
-            initialDelaySeconds: 30
-            timeoutSeconds: 10                
-          readinessProbe:
-            exec:
-              command:
-                - /bin/bash
-                - -ec
-                - rabbitmq-diagnostics -q check_running
-            initialDelaySeconds: 30
-            timeoutSeconds: 10
-            periodSeconds: 5       
-          volumeMounts:
-            - name: rabbitmq-creds
-              mountPath: /var/run/secrets/drycc/rabbitmq/creds
-            {{- if .Values.persistence.enabled }}
-            - name: rabbitmq-data
-              mountPath: /var/lib/rabbitmq
-            {{- end }}
+                - rabbitmqctl stop_app
+        livenessProbe:
+          exec:
+            command:
+              - /bin/bash
+              - -ec
+              - rabbitmq-diagnostics -q check_running
+          initialDelaySeconds: 30
+          timeoutSeconds: 10                
+        readinessProbe:
+          exec:
+            command:
+              - /bin/bash
+              - -ec
+              - rabbitmq-diagnostics -q check_running
+          initialDelaySeconds: 30
+          timeoutSeconds: 10
+          periodSeconds: 5       
+        volumeMounts:
+          - name: rabbitmq-config
+            readOnly: false
+            mountPath: /etc/rabbitmq
+          - name: rabbitmq-creds
+            mountPath: /var/run/secrets/drycc/rabbitmq/creds
+          {{- if .Values.persistence.enabled }}
+          - name: rabbitmq-data
+            mountPath: /var/lib/rabbitmq
+          {{- end }}
       volumes:
-        - name: rabbitmq-creds
-          secret:
-            secretName: rabbitmq-creds
-        {{- if .Values.persistence.enabled }}
-        - name: rabbitmq-data
-          persistentVolumeClaim:
-            claimName: drycc-rabbitmq
-        {{- end }}
+      - name: rabbitmq-creds
+        secret:
+          secretName: rabbitmq-creds
+      - name: rabbitmq-config
+        configMap:
+          name: rabbitmq-config
+      {{- if .Values.persistence.enabled }}
+      - name: rabbitmq-data
+        persistentVolumeClaim:
+          claimName: drycc-rabbitmq
+      {{- end }}
 {{- end }}

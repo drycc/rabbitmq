@@ -1,0 +1,24 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: rabbitmq-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+data:
+    rabbitmq.conf: |
+      loopback_users.guest = false
+      default_vhost = drycc
+      default_user = {{ .Values.username }}
+      default_pass = {{ .Values.password }}
+      cluster_formation.peer_discovery_backend = rabbit_peer_discovery_k8s
+      cluster_formation.k8s.host = kubernetes.default.svc.{{.Values.global.clusterDomain}}
+      cluster_formation.k8s.token_path = /var/run/secrets/kubernetes.io/serviceaccount/token
+      cluster_formation.k8s.address_type = hostname
+      cluster_formation.k8s.hostname_suffix = .drycc-rabbitmq.{{ .Release.Namespace }}.svc.{{.Values.global.clusterDomain}}
+      cluster_formation.node_cleanup.interval = 10
+      cluster_formation.node_cleanup.only_log_warning = true
+      cluster_partition_handling = autoheal
+      queue_master_locator=min-masters
+    enabled_plugins: |
+      [rabbitmq_management,rabbitmq_peer_discovery_k8s].
