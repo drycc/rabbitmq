@@ -6,7 +6,7 @@ metadata:
   labels:
     heritage: drycc
   annotations:
-    component.drycc.cc/version: {{ .Values.image_tag }}
+    component.drycc.cc/version: {{ .Values.imageTag }}
 spec:
   replicas: {{ .Values.replicas }}
   serviceName: drycc-rabbitmq
@@ -21,8 +21,8 @@ spec:
       serviceAccount: drycc-rabbitmq
       containers:
       - name: drycc-rabbitmq
-        image: {{.Values.image_registry}}/{{.Values.image_org}}/rabbitmq:{{.Values.image_tag}}
-        imagePullPolicy: {{.Values.image_pull_policy}}
+        image: {{.Values.imageRegistry}}/{{.Values.imageOrg}}/rabbitmq:{{.Values.imageTag}}
+        imagePullPolicy: {{.Values.imagePullPolicy}}
         ports:
         - containerPort: 5672
         {{- if or (.Values.limits_cpu) (.Values.limits_memory)}}
