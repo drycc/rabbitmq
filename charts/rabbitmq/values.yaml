@@ -25,3 +25,4 @@ global:
   # - off-cluster: Run Rabbitmq outside the Kubernetes cluster (configure in rabbitmq section)
   rabbitmqLocation: "on-cluster"
   clusterDomain: "cluster.local"
+  certManagerEnabled: true

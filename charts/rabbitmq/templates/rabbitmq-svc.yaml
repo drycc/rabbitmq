@@ -10,5 +10,14 @@ spec:
   selector:
     app: drycc-rabbitmq
   ports:
-  - port: 5672
+  - name: epmd
+    port: 4369
+  - name: amqp
+    port: 5672
+  - name: metrics
+    port: 9419
+  - name: stats
+    port: 15672
+  - name: dist
+    port: 25672
 {{- end }}
