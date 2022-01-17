@@ -37,16 +37,12 @@ spec:
         {{- end}}
         args:
         - -c
-        - cp -v /etc/rabbitmq/rabbitmq.conf ${RABBITMQ_CONFIG_FILE}; exec docker-entrypoint.sh
-          rabbitmq-server
+        - cp -v /etc/rabbitmq/rabbitmq.conf ${RABBITMQ_CONFIG_FILE}; 
+          cp /var/run/secrets/drycc/rabbitmq/creds/cookie $HOME/.erlang.cookie;
+          chmod 600 $HOME/.erlang.cookie; exec docker-entrypoint.sh rabbitmq-server
         command:
         - sh
         env:
-        - name: RABBITMQ_ERLANG_COOKIE
-          valueFrom:
-            secretKeyRef:
-              key: cookie
-              name: rabbitmq-creds
         - name: K8S_SERVICE_NAME
           value: drycc-rabbitmq
         - name: POD_IP
@@ -68,39 +64,47 @@ spec:
         - name: RABBITMQ_CONFIG_FILE
           value: /var/lib/rabbitmq/rabbitmq.conf
         lifecycle:
+          postStart:
+            exec:
+              command:
+              - bash
+              - -ec
+              - >
+                rabbitmqctl wait --timeout 600 /var/lib/rabbitmq/mnesia/$RABBITMQ_NODENAME.pid;
+                rabbitmqctl set_policy --vhost drycc images-shard "^shard.images$" '{"shards-per-node": 2}'
           preStop:
             exec:
               command:
-                - bash
-                - -ec
-                - rabbitmqctl stop_app
+              - bash
+              - -ec
+              - rabbitmqctl stop_app
         livenessProbe:
           exec:
             command:
-              - /bin/bash
-              - -ec
-              - rabbitmq-diagnostics -q check_running
-          initialDelaySeconds: 30
-          timeoutSeconds: 10                
+            - /bin/bash
+            - -ec
+            - rabbitmq-diagnostics -q check_running
+          initialDelaySeconds: 60
+          timeoutSeconds: 30                
         readinessProbe:
           exec:
             command:
-              - /bin/bash
-              - -ec
-              - rabbitmq-diagnostics -q check_running
-          initialDelaySeconds: 30
-          timeoutSeconds: 10
+            - /bin/bash
+            - -ec
+            - rabbitmq-diagnostics -q check_running
+          initialDelaySeconds: 60
+          timeoutSeconds: 30
           periodSeconds: 5       
         volumeMounts:
-          - name: rabbitmq-config
-            readOnly: false
-            mountPath: /etc/rabbitmq
-          - name: rabbitmq-creds
-            mountPath: /var/run/secrets/drycc/rabbitmq/creds
-          {{- if .Values.persistence.enabled }}
-          - name: rabbitmq-data
-            mountPath: /var/lib/rabbitmq
-          {{- end }}
+        - name: rabbitmq-config
+          readOnly: false
+          mountPath: /etc/rabbitmq
+        - name: rabbitmq-creds
+          mountPath: /var/run/secrets/drycc/rabbitmq/creds
+        {{- if .Values.persistence.enabled }}
+        - name: rabbitmq-data
+          mountPath: /var/lib/rabbitmq
+        {{- end }}
       volumes:
       - name: rabbitmq-creds
         secret:
