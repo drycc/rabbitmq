@@ -11,6 +11,10 @@ url: "amqp://myuser:mypassword@localhost:5672/myvhost"
 # If left empty they will be generated using randAlphaNum
 username: "admin"
 password: "admin"
+# Service
+service:
+  # Provide any additional service annotations
+  annotations: {}
 # GCP PDs and EBS volumes are supported only
 persistence:
   enabled: false # Set to true to enable persistence
