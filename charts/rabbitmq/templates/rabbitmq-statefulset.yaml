@@ -63,6 +63,12 @@ spec:
           value: rabbit@$(POD_NAME).drycc-rabbitmq.$(POD_NAMESPACE).svc.cluster.local
         - name: RABBITMQ_CONFIG_FILE
           value: /var/lib/rabbitmq/rabbitmq.conf
+        - name: RABBITMQ_PID_FILE
+          value: /var/lib/rabbitmq/mnesia/$RABBITMQ_NODENAME.pid
+        - name: RABBITMQ_MNESIA_BASE
+          value: /var/lib/rabbitmq/mnesia
+        - name: RABBITMQ_LOG_BASE
+          value: /var/lib/rabbitmq/log
         lifecycle:
           postStart:
             exec:
