@@ -7,7 +7,7 @@ RUN adduser --system \
    --group \
    drycc
 
-ENV ERLANG_VERSION="24.2.1" \
+ENV ERLANG_VERSION="24.2.2" \
   RABBITMQ_VERSION="3.9.13"
 
 RUN install-stack erlang $ERLANG_VERSION \
