@@ -36,12 +36,12 @@ spec:
             {{- end}}
         {{- end}}
         args:
+        - bash
         - -c
-        - cp -v /etc/rabbitmq/rabbitmq.conf ${RABBITMQ_CONFIG_FILE}; 
+        - cp -v /etc/rabbitmq/rabbitmq.conf ${RABBITMQ_CONFIG_FILE};
+          cp -v /etc/rabbitmq/enabled_plugins ${RABBITMQ_ENABLED_PLUGINS_FILE};
           cp /var/run/secrets/drycc/rabbitmq/creds/cookie $HOME/.erlang.cookie;
-          chmod 600 $HOME/.erlang.cookie; exec docker-entrypoint.sh rabbitmq-server
-        command:
-        - sh
+          chmod 600 $HOME/.erlang.cookie; exec rabbitmq-server
         env:
         - name: K8S_SERVICE_NAME
           value: drycc-rabbitmq
@@ -63,6 +63,8 @@ spec:
           value: rabbit@$(POD_NAME).drycc-rabbitmq.$(POD_NAMESPACE).svc.cluster.local
         - name: RABBITMQ_CONFIG_FILE
           value: /var/lib/rabbitmq/rabbitmq.conf
+        - name: RABBITMQ_ENABLED_PLUGINS_FILE
+          value: /var/lib/rabbitmq/enabled_plugins
         - name: RABBITMQ_PID_FILE
           value: /var/lib/rabbitmq/mnesia/$RABBITMQ_NODENAME.pid
         - name: RABBITMQ_MNESIA_BASE
@@ -73,21 +75,24 @@ spec:
           postStart:
             exec:
               command:
+              - init-stack
               - bash
               - -ec
               - >
-                rabbitmqctl wait --timeout 600 /var/lib/rabbitmq/mnesia/$RABBITMQ_NODENAME.pid;
+                rabbitmq-diagnostics check_running -n $RABBITMQ_NODENAME --timeout 600;
                 rabbitmqctl set_policy --vhost drycc images-shard "^shard.images$" '{"shards-per-node": 2}'
           preStop:
             exec:
               command:
+              - init-stack
               - bash
               - -ec
               - rabbitmqctl stop_app
         livenessProbe:
           exec:
             command:
-            - /bin/bash
+            - init-stack
+            - bash
             - -ec
             - rabbitmq-diagnostics -q check_running
           initialDelaySeconds: 60
@@ -95,7 +100,8 @@ spec:
         readinessProbe:
           exec:
             command:
-            - /bin/bash
+            - init-stack
+            - bash
             - -ec
             - rabbitmq-diagnostics -q check_running
           initialDelaySeconds: 60
@@ -118,6 +124,10 @@ spec:
       - name: rabbitmq-config
         configMap:
           name: rabbitmq-config
+      securityContext:
+        fsGroup: 1001
+        runAsGroup: 1001
+        runAsUser: 1001
   {{- if .Values.persistence.enabled }}
   volumeClaimTemplates:
   - metadata:

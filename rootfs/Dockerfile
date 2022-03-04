@@ -1,17 +1,18 @@
 FROM docker.io/drycc/base:bullseye
 
-RUN adduser --system \
-   --shell /bin/bash \
-   --disabled-password \
-   --home /opt/drycc/rabbitmq \
-   --group \
-   drycc
+ARG DRYCC_UID=1001
+ARG DRYCC_GID=1001
+ARG DRYCC_HOME_DIR=/var/lib/rabbitmq
+
+RUN groupadd drycc --gid ${DRYCC_GID} \
+  && useradd drycc -u ${DRYCC_UID} -g ${DRYCC_GID} -s /bin/bash -m -d ${DRYCC_HOME_DIR}
 
 ENV ERLANG_VERSION="24.2.2" \
-  RABBITMQ_VERSION="3.9.13"
+  RABBITMQ_VERSION="3.9.13" \
+  RABBITMQ_DATA_DIR=${DRYCC_HOME_DIR}
 
-RUN install-stack erlang $ERLANG_VERSION \
-  && install-stack rabbitmq $RABBITMQ_VERSION \
+RUN install-stack erlang ${ERLANG_VERSION} \
+  && install-stack rabbitmq ${RABBITMQ_VERSION} \
   && rm -rf \
       /usr/share/doc \
       /usr/share/man \
