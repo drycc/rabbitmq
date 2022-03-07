@@ -1,15 +1,14 @@
 FROM docker.io/drycc/base:bullseye
 
-ARG DRYCC_UID=1001
-ARG DRYCC_GID=1001
-ARG DRYCC_HOME_DIR=/data
+ENV DRYCC_UID=1001 \
+  DRYCC_GID=1001 \
+  DRYCC_HOME_DIR=/data \
+  ERLANG_VERSION="24.2.2" \
+  RABBITMQ_LOGS=- \
+  RABBITMQ_VERSION="3.9.13"
 
 RUN groupadd drycc --gid ${DRYCC_GID} \
   && useradd drycc -u ${DRYCC_UID} -g ${DRYCC_GID} -s /bin/bash -m -d ${DRYCC_HOME_DIR}
-
-ENV ERLANG_VERSION="24.2.2" \
-  RABBITMQ_LOGS=- \
-  RABBITMQ_VERSION="3.9.13"
 
 RUN install-stack erlang ${ERLANG_VERSION} \
   && install-stack rabbitmq ${RABBITMQ_VERSION} \
@@ -26,11 +25,11 @@ RUN install-stack erlang ${ERLANG_VERSION} \
       /lib/udev \
       /usr/lib/`echo $(uname -m)`-linux-gnu/gconv/IBM* \
       /usr/lib/`echo $(uname -m)`-linux-gnu/gconv/EBC* \
-  && bash -c "mkdir -p /usr/share/man/man{1..8}" \
-  && chown -R drycc:drycc /opt/drycc/rabbitmq ${DRYCC_HOME_DIR}
+  && mkdir -p /usr/share/man/man{1..8} \
+  && chown -R ${DRYCC_UID}:${DRYCC_GID} /opt/drycc/rabbitmq ${DRYCC_HOME_DIR}
 
 WORKDIR ${DRYCC_HOME_DIR}
 
-USER drycc
+USER ${DRYCC_UID}
 CMD ["rabbitmq-server"]
 EXPOSE 4369 5671 5672 15691 15692 25672
