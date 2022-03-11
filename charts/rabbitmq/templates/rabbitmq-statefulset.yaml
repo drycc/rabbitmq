@@ -77,7 +77,7 @@ spec:
               - bash
               - -ec
               - >
-                rabbitmqctl wait --timeout 600 --pid 1;
+                rabbitmqctl wait --timeout 600 $RABBITMQ_MNESIA_BASE/$RABBITMQ_NODENAME.pid;
                 rabbitmqctl set_policy --vhost drycc images-shard "^shard.images$" '{"shards-per-node": 2}'
           preStop:
             exec:
