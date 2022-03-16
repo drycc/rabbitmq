@@ -18,6 +18,9 @@ spec:
       labels:
         app: drycc-rabbitmq
     spec:
+      {{- if .Values.global.common }}
+      {{- include "common.affinity" (dict "key" "app" "values" (list "drycc-rabbitmq")) | indent 6 }}
+      {{- end }}
       serviceAccount: drycc-rabbitmq
       containers:
       - name: drycc-rabbitmq
@@ -94,7 +97,7 @@ spec:
             - -ec
             - rabbitmq-diagnostics -q check_running
           initialDelaySeconds: 60
-          timeoutSeconds: 30                
+          timeoutSeconds: 30
         readinessProbe:
           exec:
             command:
@@ -104,7 +107,7 @@ spec:
             - rabbitmq-diagnostics -q check_running
           initialDelaySeconds: 60
           timeoutSeconds: 30
-          periodSeconds: 5       
+          periodSeconds: 5
         volumeMounts:
         - name: rabbitmq-config
           readOnly: false
