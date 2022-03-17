@@ -18,7 +18,7 @@ spec:
       labels:
         app: drycc-rabbitmq
     spec:
-      {{- include "common.affinities.nodes.soft" (dict "key" "app" "values" (list "drycc-rabbitmq")) | indent 6 }}
+      {{- include "common.affinities.pods.soft" (dict "key" "app" "values" (list "drycc-rabbitmq")) | indent 6 }}
       serviceAccount: drycc-rabbitmq
       containers:
       - name: drycc-rabbitmq
