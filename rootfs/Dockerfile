@@ -3,9 +3,9 @@ FROM docker.io/drycc/base:bullseye
 ENV DRYCC_UID=1001 \
   DRYCC_GID=1001 \
   DRYCC_HOME_DIR=/data \
-  ERLANG_VERSION="24.2.2" \
+  ERLANG_VERSION="24.3.3" \
   RABBITMQ_LOGS=- \
-  RABBITMQ_VERSION="3.9.13"
+  RABBITMQ_VERSION="3.9.14"
 
 RUN groupadd drycc --gid ${DRYCC_GID} \
   && useradd drycc -u ${DRYCC_UID} -g ${DRYCC_GID} -s /bin/bash -m -d ${DRYCC_HOME_DIR}
