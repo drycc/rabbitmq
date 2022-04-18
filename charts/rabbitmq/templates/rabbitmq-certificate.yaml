@@ -1,3 +1,4 @@
+{{- if eq .Values.global.rabbitmqLocation "on-cluster" }}
 {{ if .Values.global.certManagerEnabled }}
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -12,4 +13,5 @@ spec:
   - drycc-rabbitmq.{{ .Values.global.platformDomain }}
   privateKey:
     rotationPolicy: Always
+{{- end }}
 {{- end }}

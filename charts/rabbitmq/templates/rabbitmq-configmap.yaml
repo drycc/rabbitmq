@@ -1,3 +1,4 @@
+{{- if eq .Values.global.rabbitmqLocation "on-cluster" }}
 kind: ConfigMap
 apiVersion: v1
 metadata:
@@ -22,3 +23,4 @@ data:
       queue_master_locator=min-masters
     enabled_plugins: |
       [rabbitmq_management,rabbitmq_sharding,rabbitmq_peer_discovery_k8s].
+{{- end }}
