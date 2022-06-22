@@ -4,6 +4,24 @@ imageTag: "canary"
 imageRegistry: "registry.drycc.cc"
 # limits_cpu: "100m"
 # limits_memory: "50Mi"
+nodeAffinityPreset:
+  key: "drycc.cc/node"
+  type: "soft"
+  values:
+  - "true"
+
+podAffinityPreset:
+  key: "security"
+  type: ""
+  values:
+  - "drycc-security"
+
+podAntiAffinityPreset:
+  key: "app"
+  type: "soft"
+  values:
+  - "drycc-rabbitmq"
+
 replicas: 1
 # Configure the following ONLY if using an off-cluster rabbitmq
 url: "amqp://myuser:mypassword@localhost:5672/myvhost"
