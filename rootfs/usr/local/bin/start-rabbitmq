@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+rabbitmq-server &
+rabbitmqctl wait --timeout 600 $RABBITMQ_MNESIA_BASE/$RABBITMQ_NODENAME.pid
+rabbitmqctl set_policy --vhost drycc images-shard "^shard.images$" "{'shards-per-node': $RABBITMQ_SHARDS_PER_NODE}"
+wait

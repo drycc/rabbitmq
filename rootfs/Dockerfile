@@ -7,6 +7,8 @@ ENV DRYCC_UID=1001 \
   RABBITMQ_LOGS=- \
   RABBITMQ_VERSION="3.9.14"
 
+COPY usr/local/bin/start-rabbitmq /usr/local/bin/start-rabbitmq
+
 RUN groupadd drycc --gid ${DRYCC_GID} \
   && useradd drycc -u ${DRYCC_UID} -g ${DRYCC_GID} -s /bin/bash -m -d ${DRYCC_HOME_DIR}
 
@@ -26,6 +28,7 @@ RUN install-stack erlang ${ERLANG_VERSION} \
       /usr/lib/`echo $(uname -m)`-linux-gnu/gconv/IBM* \
       /usr/lib/`echo $(uname -m)`-linux-gnu/gconv/EBC* \
   && mkdir -p /usr/share/man/man{1..8} \
+  && chmod +x /usr/local/bin/start-rabbitmq \
   && chown -R ${DRYCC_UID}:${DRYCC_GID} /opt/drycc/rabbitmq ${DRYCC_HOME_DIR}
 
 WORKDIR ${DRYCC_HOME_DIR}

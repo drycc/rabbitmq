@@ -45,7 +45,7 @@ spec:
         - cp -v /etc/rabbitmq/rabbitmq.conf ${RABBITMQ_CONFIG_FILE};
           cp -v /etc/rabbitmq/enabled_plugins ${RABBITMQ_ENABLED_PLUGINS_FILE};
           cp /var/run/secrets/drycc/rabbitmq/creds/cookie $HOME/.erlang.cookie;
-          chmod 600 $HOME/.erlang.cookie; exec rabbitmq-server
+          chmod 600 $HOME/.erlang.cookie; exec start-rabbitmq
         env:
         - name: K8S_SERVICE_NAME
           value: drycc-rabbitmq
@@ -73,16 +73,9 @@ spec:
           value: /data/mnesia
         - name: RABBITMQ_LOG_BASE
           value: /data/log
+        - name: RABBITMQ_SHARDS_PER_NODE
+          value: "{{.Values.shardsPerNode}}"
         lifecycle:
-          postStart:
-            exec:
-              command:
-              - init-stack
-              - bash
-              - -ec
-              - >
-                rabbitmqctl wait --timeout 600 $RABBITMQ_MNESIA_BASE/$RABBITMQ_NODENAME.pid;
-                rabbitmqctl set_policy --vhost drycc images-shard "^shard.images$" '{"shards-per-node": 2}'
           preStop:
             exec:
               command:

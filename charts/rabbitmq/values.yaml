@@ -23,6 +23,7 @@ podAntiAffinityPreset:
   - "drycc-rabbitmq"
 
 replicas: 1
+shardsPerNode: 2
 # Configure the following ONLY if using an off-cluster rabbitmq
 url: "amqp://myuser:mypassword@localhost:5672/myvhost"
 # The username and password to be used by the on-cluster database.
