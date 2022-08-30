@@ -3,9 +3,9 @@ FROM registry.drycc.cc/drycc/base:bullseye
 ENV DRYCC_UID=1001 \
   DRYCC_GID=1001 \
   DRYCC_HOME_DIR=/data \
-  ERLANG_VERSION="24.3.3" \
+  ERLANG_VERSION="25.0.4" \
   RABBITMQ_LOGS=- \
-  RABBITMQ_VERSION="3.9.14"
+  RABBITMQ_VERSION="3.10.7"
 
 COPY usr/local/bin/start-rabbitmq /usr/local/bin/start-rabbitmq
 
