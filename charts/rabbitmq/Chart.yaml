@@ -1,6 +1,7 @@
 name: rabbitmq
 home: https://github.com/drycc/rabbitmq
 apiVersion: v2
+appVersion: 1.0.0
 dependencies:
   - name: common
     repository: oci://registry.drycc.cc/charts
