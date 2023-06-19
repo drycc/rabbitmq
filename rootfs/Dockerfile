@@ -1,11 +1,11 @@
-FROM registry.drycc.cc/drycc/base:bullseye
+FROM registry.drycc.cc/drycc/base:bookworm
 
 ENV DRYCC_UID=1001 \
   DRYCC_GID=1001 \
   DRYCC_HOME_DIR=/data \
-  ERLANG_VERSION="25.0.4" \
+  ERLANG_VERSION="26.0.1" \
   RABBITMQ_LOGS=- \
-  RABBITMQ_VERSION="3.10.7"
+  RABBITMQ_VERSION="3.12.0"
 
 COPY usr/local/bin/start-rabbitmq /usr/local/bin/start-rabbitmq
 
