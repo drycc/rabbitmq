@@ -11,16 +11,14 @@ nodeAffinityPreset:
   - "true"
 
 podAffinityPreset:
-  key: "security"
   type: ""
-  values:
-  - "drycc-security"
+  extraMatchLabels:
+    security: "drycc-security"
 
 podAntiAffinityPreset:
-  key: "app"
   type: "soft"
-  values:
-  - "drycc-rabbitmq"
+  extraMatchLabels:
+    app: "drycc-rabbitmq"
 
 replicas: 1
 shardsPerNode: 2
