@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
 rabbitmq-server &
-rabbitmqctl wait --timeout 600 $RABBITMQ_MNESIA_BASE/$RABBITMQ_NODENAME.pid
-rabbitmqctl set_policy --vhost drycc images-shard "^shard.images$" "{'shards-per-node': $RABBITMQ_SHARDS_PER_NODE}"
+
+shards=$(rabbitmqctl list_policies --vhost drycc --formatter json| jq -r '.[] | select(.name == "images-shard") | .definition' | jq '.["shards-per-node"]')
+if [[ $RABBITMQ_REPLICAS -gt 1 && $RABBITMQ_SHARDS_PER_NODE -ne $shards ]]; then
+  rabbitmqctl wait --timeout 600 $RABBITMQ_MNESIA_BASE/$RABBITMQ_NODENAME.pid
+  rabbitmqctl set_policy --vhost drycc images-shard "^shard.images$" "{\"shards-per-node\": $RABBITMQ_SHARDS_PER_NODE}"
+fi
 wait
