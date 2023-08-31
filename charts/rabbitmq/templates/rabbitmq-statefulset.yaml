@@ -77,6 +77,8 @@ spec:
           value: /data/log
         - name: RABBITMQ_SHARDS_PER_NODE
           value: "{{.Values.shardsPerNode}}"
+        - name: RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS
+          value: +K true +sub true +sbwt none
         lifecycle:
           preStop:
             exec:
