@@ -1,7 +1,6 @@
 SHELL := /bin/bash
 
 # all monitor components share/use the following targets/exports
-DOCKER_HOST = $(shell echo $$DOCKER_HOST)
 BUILD_TAG ?= git-$(shell git rev-parse --short HEAD)
 DRYCC_REGISTRY ?= ${DEV_REGISTRY}
 IMAGE_PREFIX ?= drycc
@@ -11,26 +10,23 @@ include includes.mk
 include versioning.mk
 include deploy.mk
 
-build: docker-build
-push: docker-push
-deploy: check-kubectl docker-build docker-push install
+build: podman-build
+push: podman-push
+deploy: check-kubectl podman-build podman-push install
 
-docker-build:
-	docker build ${DOCKER_BUILD_FLAGS} --build-arg CODENAME=${CODENAME} -t ${IMAGE} rootfs
-	docker tag ${IMAGE} ${MUTABLE_IMAGE}
+podman-build:
+	podman build --build-arg CODENAME=${CODENAME} -t ${IMAGE} rootfs
+	podman tag ${IMAGE} ${MUTABLE_IMAGE}
 
-docker-buildx:
-	docker buildx build --build-arg CODENAME=${CODENAME} --platform ${PLATFORM} -t ${IMAGE} rootfs --push
-
-clean: check-docker
-	docker rmi $(IMAGE)
+clean: check-podman
+	podman rmi $(IMAGE)
 	
-test: docker-build
+test: podman-build
 
-.PHONY: build push docker-build clean upgrade deploy test test-style
+.PHONY: build push podman-build clean upgrade deploy test test-style
 
 build-all:
-	docker build ${DOCKER_BUILD_FLAGS} --build-arg CODENAME=${CODENAME} -t ${DRYCC_REGISTRY}/${IMAGE_PREFIX}/rabbitmq:${VERSION} rabbitmq/rootfs
+	podman build --build-arg CODENAME=${CODENAME} -t ${DRYCC_REGISTRY}/${IMAGE_PREFIX}/rabbitmq:${VERSION} rabbitmq/rootfs
 
 push-all:
-	docker push ${DRYCC_REGISTRY}/${IMAGE_PREFIX}/rabbitmq:${VERSION}
+	podman push ${DRYCC_REGISTRY}/${IMAGE_PREFIX}/rabbitmq:${VERSION}
