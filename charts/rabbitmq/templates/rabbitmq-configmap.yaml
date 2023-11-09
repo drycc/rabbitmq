@@ -22,5 +22,5 @@ data:
       cluster_partition_handling = autoheal
       queue_master_locator=min-masters
     enabled_plugins: |
-      [rabbitmq_management,rabbitmq_sharding,rabbitmq_peer_discovery_k8s].
+      [rabbitmq_management,rabbitmq_random_exchange,rabbitmq_peer_discovery_k8s].
 {{- end }}

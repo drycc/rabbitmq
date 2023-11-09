@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
-
 rabbitmq-server &
-
-shards=$(rabbitmqctl list_policies --vhost drycc --formatter json| jq -r '.[] | select(.name == "images-shard") | .definition' | jq '.["shards-per-node"]')
-if [[ $RABBITMQ_REPLICAS -gt 1 && $RABBITMQ_SHARDS_PER_NODE -ne $shards ]]; then
-  rabbitmqctl wait --timeout 600 $RABBITMQ_MNESIA_BASE/$RABBITMQ_NODENAME.pid
-  rabbitmqctl set_policy --vhost drycc images-shard "^" "{\"shards-per-node\": $RABBITMQ_SHARDS_PER_NODE}"
+rabbitmqctl wait --timeout 600 "$RABBITMQ_MNESIA_BASE/$RABBITMQ_NODENAME.pid"
+default_policy='{"ha-mode":"exactly","ha-params":2,"ha-sync-mode":"automatic"}'
+current_policy="$(rabbitmqctl list_policies --vhost drycc --formatter json| jq -r '.[] | select(.name == "default") | .definition')"
+if [[ "$default_policy" != "$current_policy" ]]; then
+  rabbitmqctl set_policy --vhost drycc default "^" "$default_policy"
 fi
 wait

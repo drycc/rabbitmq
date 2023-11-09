@@ -10,6 +10,9 @@ include includes.mk
 include versioning.mk
 include deploy.mk
 
+SHELLCHECK_PREFIX := podman run -v ${CURDIR}:/workdir -w /workdir ${DEV_REGISTRY}/drycc/go-dev shellcheck
+SHELL_SCRIPTS = $(wildcard rootfs/usr/local/bin/*)
+
 build: podman-build
 push: podman-push
 deploy: check-kubectl podman-build podman-push install
@@ -21,7 +24,10 @@ podman-build:
 clean: check-podman
 	podman rmi $(IMAGE)
 	
-test: podman-build
+test: test-style podman-build
+
+test-style:
+	${SHELLCHECK_PREFIX} $(SHELL_SCRIPTS)
 
 .PHONY: build push podman-build clean upgrade deploy test test-style
 
