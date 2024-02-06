@@ -28,7 +28,16 @@ spec:
         image: {{.Values.imageRegistry}}/{{.Values.imageOrg}}/rabbitmq:{{.Values.imageTag}}
         imagePullPolicy: {{.Values.imagePullPolicy}}
         ports:
-        - containerPort: 5672
+        - name: epmd
+          containerPort: 4369
+        - name: amqp
+          containerPort: 5672
+        - name: metrics
+          containerPort: 9419
+        - name: stats
+          containerPort: 15672
+        - name: dist
+          containerPort: 25672
         {{- if or (.Values.limits_cpu) (.Values.limits_memory)}}
         resources:
           limits:
@@ -87,14 +96,14 @@ spec:
               - rabbitmqctl stop_app
         startupProbe:
           tcpSocket:
-            port: 5672
+            port: 15672
         livenessProbe:
           exec:
             command:
             - init-stack
             - bash
             - -ec
-            - rabbitmq-diagnostics -q check_running
+            - test "$(curl -f --user {{ .Values.username }}:{{ .Values.password }} 127.0.0.1:15672/api/health/checks/port-listener/5672)" = '{"status":"ok","port":5672}'
           initialDelaySeconds: 60
           timeoutSeconds: 30
         readinessProbe:
@@ -103,7 +112,7 @@ spec:
             - init-stack
             - bash
             - -ec
-            - rabbitmq-diagnostics -q ping
+            - test "$(curl -f --user {{ .Values.username }}:{{ .Values.password }} 127.0.0.1:15672/api/health/checks/local-alarms)" = '{"status":"ok"}'
           initialDelaySeconds: 60
           timeoutSeconds: 30
           periodSeconds: 5
