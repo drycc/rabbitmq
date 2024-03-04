@@ -48,6 +48,10 @@ spec:
             memory: {{.Values.limits_memory}}
             {{- end}}
         {{- end}}
+        {{- if .Values.diagnosticMode.enabled }}
+        command: {{- include "common.tplvalues.render" (dict "value" .Values.diagnosticMode.command "context" $) | nindent 10 }}
+        args: {{- include "common.tplvalues.render" (dict "value" .Values.diagnosticMode.args "context" $) | nindent 10 }}
+        {{- else }}
         args:
         - bash
         - -c
@@ -55,6 +59,7 @@ spec:
           cp -v /etc/rabbitmq/enabled_plugins ${RABBITMQ_ENABLED_PLUGINS_FILE};
           cp /var/run/secrets/drycc/rabbitmq/creds/cookie $HOME/.erlang.cookie;
           chmod 600 $HOME/.erlang.cookie; exec start-rabbitmq
+        {{- end }}
         env:
         - name: K8S_SERVICE_NAME
           value: drycc-rabbitmq
@@ -86,6 +91,7 @@ spec:
           value: /data/log
         - name: RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS
           value: +K true +sub true +sbwt none
+        {{- if not .Values.diagnosticMode.enabled }}
         lifecycle:
           preStop:
             exec:
@@ -116,6 +122,7 @@ spec:
           initialDelaySeconds: 60
           timeoutSeconds: 30
           periodSeconds: 5
+        {{- end }}
         volumeMounts:
         - name: rabbitmq-config
           readOnly: false
