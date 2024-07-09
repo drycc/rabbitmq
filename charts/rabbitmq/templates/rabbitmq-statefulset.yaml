@@ -58,7 +58,8 @@ spec:
         - cp -v /etc/rabbitmq/rabbitmq.conf ${RABBITMQ_CONFIG_FILE};
           cp -v /etc/rabbitmq/enabled_plugins ${RABBITMQ_ENABLED_PLUGINS_FILE};
           cp /var/run/secrets/drycc/rabbitmq/creds/cookie $HOME/.erlang.cookie;
-          chmod 600 $HOME/.erlang.cookie; exec start-rabbitmq
+          chmod 600 $HOME/.erlang.cookie;
+          exec rabbitmq-server
         {{- end }}
         env:
         - name: K8S_SERVICE_NAME

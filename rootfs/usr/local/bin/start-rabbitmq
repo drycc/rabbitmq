@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-rabbitmq-server &
-rabbitmqctl wait --timeout 600 "$RABBITMQ_MNESIA_BASE/$RABBITMQ_NODENAME.pid"
-default_policy='{"ha-mode":"exactly","ha-params":2,"ha-sync-mode":"automatic"}'
-current_policy="$(rabbitmqctl list_policies --vhost drycc --formatter json| jq -r '.[] | select(.name == "default") | .definition')"
-if [[ "$default_policy" != "$current_policy" ]]; then
-  rabbitmqctl set_policy --vhost drycc default "^" "$default_policy"
-fi
-wait

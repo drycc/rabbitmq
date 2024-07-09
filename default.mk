@@ -10,15 +10,10 @@ include includes.mk
 include versioning.mk
 include deploy.mk
 
-SHELLCHECK_PREFIX := podman run -v ${CURDIR}:/workdir -w /workdir ${DEV_REGISTRY}/drycc/go-dev shellcheck
-SHELL_SCRIPTS = $(wildcard rootfs/usr/local/bin/*)
-
 build: podman-build
-push: podman-push
-deploy: check-kubectl podman-build podman-push install
 
 podman-build:
-	podman build --build-arg CODENAME=${CODENAME} -t ${IMAGE} rootfs
+	podman build --build-arg CODENAME=${CODENAME} -t ${IMAGE} .
 	podman tag ${IMAGE} ${MUTABLE_IMAGE}
 
 clean: check-podman
@@ -26,13 +21,4 @@ clean: check-podman
 	
 test: test-style podman-build
 
-test-style:
-	${SHELLCHECK_PREFIX} $(SHELL_SCRIPTS)
-
 .PHONY: build push podman-build clean upgrade deploy test test-style
-
-build-all:
-	podman build --build-arg CODENAME=${CODENAME} -t ${DRYCC_REGISTRY}/${IMAGE_PREFIX}/rabbitmq:${VERSION} rabbitmq/rootfs
-
-push-all:
-	podman push ${DRYCC_REGISTRY}/${IMAGE_PREFIX}/rabbitmq:${VERSION}

@@ -4,12 +4,10 @@ FROM registry.drycc.cc/drycc/base:${CODENAME}
 ENV DRYCC_UID=1001 \
   DRYCC_GID=1001 \
   DRYCC_HOME_DIR=/data \
-  JQ_VERSION=1.6 \
-  ERLANG_VERSION="26.0.2" \
+  JQ_VERSION="1.7.1" \
+  ERLANG_VERSION="26.2.5" \
   RABBITMQ_LOGS=- \
-  RABBITMQ_VERSION="3.12.4"
-
-COPY usr/local/bin/start-rabbitmq /usr/local/bin/start-rabbitmq
+  RABBITMQ_VERSION="3.13.4"
 
 RUN groupadd drycc --gid ${DRYCC_GID} \
   && useradd drycc -u ${DRYCC_UID} -g ${DRYCC_GID} -s /bin/bash -m -d ${DRYCC_HOME_DIR}
@@ -31,7 +29,6 @@ RUN install-stack jq ${JQ_VERSION} \
       /usr/lib/`echo $(uname -m)`-linux-gnu/gconv/IBM* \
       /usr/lib/`echo $(uname -m)`-linux-gnu/gconv/EBC* \
   && mkdir -p /usr/share/man/man{1..8} \
-  && chmod +x /usr/local/bin/start-rabbitmq \
   && chown -R ${DRYCC_UID}:${DRYCC_GID} /opt/drycc/rabbitmq ${DRYCC_HOME_DIR}
 
 WORKDIR ${DRYCC_HOME_DIR}
