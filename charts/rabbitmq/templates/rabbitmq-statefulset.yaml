@@ -59,7 +59,7 @@ spec:
           cp -v /etc/rabbitmq/enabled_plugins ${RABBITMQ_ENABLED_PLUGINS_FILE};
           cp /var/run/secrets/drycc/rabbitmq/creds/cookie $HOME/.erlang.cookie;
           chmod 600 $HOME/.erlang.cookie;
-          exec rabbitmq-server
+          exec start-rabbitmq
         {{- end }}
         env:
         - name: K8S_SERVICE_NAME
@@ -76,6 +76,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: RABBITMQ_VHOSTS
+          value: "{{.Values.vhosts}}"
         - name: RABBITMQ_REPLICAS
           value: "{{.Values.replicas}}"
         - name: RABBITMQ_USE_LONGNAME

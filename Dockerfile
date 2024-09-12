@@ -9,6 +9,8 @@ ENV DRYCC_UID=1001 \
   RABBITMQ_LOGS=- \
   RABBITMQ_VERSION="3.13.4"
 
+COPY rootfs/usr/local/bin/start-rabbitmq /usr/local/bin/start-rabbitmq
+
 RUN groupadd drycc --gid ${DRYCC_GID} \
   && useradd drycc -u ${DRYCC_UID} -g ${DRYCC_GID} -s /bin/bash -m -d ${DRYCC_HOME_DIR}
 

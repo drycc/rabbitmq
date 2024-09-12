@@ -41,6 +41,8 @@ url: "amqp://myuser:mypassword@localhost:5672/myvhost"
 # If left empty they will be generated using randAlphaNum
 username: "admin"
 password: "admin"
+# List of vhosts to be created
+vhosts: "controller,helmbroker"
 # Service
 service:
   # Provide any additional service annotations

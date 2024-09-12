@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+rabbitmq-server &
+rabbitmqctl wait --timeout 600 "$RABBITMQ_MNESIA_BASE/$RABBITMQ_NODENAME.pid"
+for vhost in $(echo "${RABBITMQ_VHOSTS}" | tr "," "\n")
+do
+  name=$(rabbitmqctl list_vhosts --formatter json | jq -r ".[] | select(.name == \"$vhost\") | .name")
+  if [[ "$name" == "" ]]; then
+    rabbitmqctl add_vhost "$vhost"
+    for user in $(rabbitmqctl list_users --formatter json |  jq -r ".[] | .user")
+    do
+      rabbitmqctl set_permissions -p "${vhost}" "${user}" ".*" ".*" ".*"
+    done
+  fi
+done
+wait
