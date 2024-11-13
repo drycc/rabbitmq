@@ -33,7 +33,7 @@ spec:
         - name: amqp
           containerPort: 5672
         - name: metrics
-          containerPort: 9419
+          containerPort: 15692
         - name: stats
           containerPort: 15672
         - name: dist
