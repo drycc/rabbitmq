@@ -5,9 +5,9 @@ ENV DRYCC_UID=1001 \
   DRYCC_GID=1001 \
   DRYCC_HOME_DIR=/data \
   JQ_VERSION="1.7.1" \
-  ERLANG_VERSION="26.2.5" \
+  ERLANG_VERSION="27.1.2" \
   RABBITMQ_LOGS=- \
-  RABBITMQ_VERSION="3.13.4"
+  RABBITMQ_VERSION="4.0.3"
 
 COPY rootfs/usr/local/bin/start-rabbitmq /usr/local/bin/start-rabbitmq
 
